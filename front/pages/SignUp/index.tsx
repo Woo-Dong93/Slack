@@ -2,7 +2,7 @@ import useInput from '@hooks/useInput';
 import React, { useCallback, useState } from 'react';
 import axios from 'axios';
 import { Success, Form, Error, Label, Input, LinkContainer, Button, Header } from './styles';
-//import { Link, Redirect } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 const SingUp = () => {
   const [email, onChangeEmail] = useInput('');
@@ -45,11 +45,9 @@ const SingUp = () => {
             password,
           })
           .then((response) => {
-            console.log(response);
             setSignUpSuccess(true);
           })
           .catch((error) => {
-            console.log(error.response);
             setSignUpError(error.response.data);
           })
           .finally(() => {});
@@ -102,7 +100,7 @@ const SingUp = () => {
       </Form>
       <LinkContainer>
         이미 회원이신가요?&nbsp;
-        {/* <Link to="/login">로그인 하러가기</Link> */}
+        <Link to="/login">로그인 하러가기</Link>
       </LinkContainer>
     </div>
   );
