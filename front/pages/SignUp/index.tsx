@@ -1,24 +1,14 @@
+import useInput from '@hooks/useInput';
 import React, { useCallback, useState } from 'react';
 import { Success, Form, Error, Label, Input, LinkContainer, Button, Header } from './styles';
 //import { Link, Redirect } from 'react-router-dom';
 
 const SingUp = () => {
-  const [email, setEmail] = useState('');
-  const [nickname, setNickname] = useState('');
-  const [password, setPassword] = useState('');
-  const [passwordCheck, setPasswordCheck] = useState('');
+  const [email, onChangeEmail] = useInput('');
+  const [nickname, onChangeNickname] = useInput('');
+  const [password, , setPassword] = useInput('');
+  const [passwordCheck, , setPasswordCheck] = useInput('');
   const [mismatchError, setMismatchError] = useState(false);
-
-  const onChangeEmail = useCallback((e) => {
-    setEmail(e.target.value);
-  }, []);
-
-  const onChangeNickname = useCallback(
-    (e) => {
-      setNickname(e.target.value);
-    },
-    [passwordCheck],
-  );
 
   const onChangePassword = useCallback(
     (e) => {
@@ -40,7 +30,7 @@ const SingUp = () => {
     (e) => {
       e.preventDefault();
       console.log(email, nickname, password, passwordCheck);
-      if (!mismatchError && nickname && email) {
+      if (!mismatchError && nickname && email && password) {
         console.log('서버로 회원가입하기');
       }
     },
