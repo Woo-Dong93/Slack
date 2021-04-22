@@ -2,7 +2,7 @@ import useInput from '@hooks/useInput';
 import React, { useCallback, useState } from 'react';
 import { Form, Error, Label, Input, LinkContainer, Button, Header } from '@pages/SignUp/styles';
 import axios from 'axios';
-import { Link } from 'react-router-dom';
+import { Link, Redirect } from 'react-router-dom';
 import fetcher from '@utils/fetcher';
 import useSWR from 'swr';
 
@@ -35,12 +35,21 @@ const Login = () => {
           revalidate();
         })
         .catch((error) => {
-          console.log(error.response);
+          setLogInError(error.response?.data?.statusCode === 401);
         })
         .finally(() => {});
     },
     [email, password],
   );
+
+  if (data === undefined) {
+    return <div>로딩중...</div>;
+  }
+
+  // 로그인하기를 누르면 data가 바뀌면서 리렌더링이 일어나고 다시 이 조건문에 걸리게 된다.
+  if (data) {
+    return <Redirect to="/workspace/channel" />;
+  }
 
   return (
     <div id="container">
