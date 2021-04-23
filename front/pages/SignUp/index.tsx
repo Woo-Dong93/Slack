@@ -7,10 +7,7 @@ import fetcher from '@utils/fetcher';
 import useSWR from 'swr';
 
 const SingUp = () => {
-  const { data, error, revalidate } = useSWR('http://localhost:3095/api/users', fetcher, {
-    dedupingInterval: 100000,
-  });
-
+  const { data, error, revalidate } = useSWR('http://localhost:3095/api/users', fetcher);
   const [email, onChangeEmail] = useInput('');
   const [nickname, onChangeNickname] = useInput('');
   const [password, , setPassword] = useInput('');
@@ -69,7 +66,7 @@ const SingUp = () => {
   }
 
   if (data) {
-    return <Redirect to="/workspace/channel" />;
+    return <Redirect to="/login" />;
   }
 
   return (
