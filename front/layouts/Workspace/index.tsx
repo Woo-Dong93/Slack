@@ -2,6 +2,7 @@ import React, { VFC, useCallback, useState } from 'react';
 import fetcher from '@utils/fetcher';
 import useSWR from 'swr';
 import axios from 'axios';
+import { useParams } from 'react-router';
 import { Link, Redirect, Route, Switch } from 'react-router-dom';
 import {
   Channels,
@@ -22,12 +23,14 @@ import {
 import gravatar from 'gravatar';
 import loable from '@loadable/component';
 import Menu from '@components/Menu';
-import { IUser } from '@typings/db';
+import { IChannel, IUser } from '@typings/db';
 import Modal from '@components/Modal';
 import useInput from '@hooks/useInput';
 import { Button, Input, Label } from '@pages/SignUp/styles';
 import { toast } from 'react-toastify';
 import CreateChannelModal from '@components/CreateChannelModal';
+import InviteWorkspaceModal from '@components/InviteWorkspaceModal';
+import InviteChannelModal from '@components/InviteChannelModal';
 
 const Channel = loable(() => import('@pages/Channel'));
 const DirectMessage = loable(() => import('@pages/DirectMessage'));
@@ -35,15 +38,21 @@ const DirectMessage = loable(() => import('@pages/DirectMessage'));
 const Workspace: VFC = () => {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showCreateWorkspaceModal, setShowCreateWorkspaceModal] = useState(false);
+  const [showInviteWorkspaceModal, setShowInviteWorkspaceModal] = useState(false);
+  const [showInviteChannelModal, setShowInviteChannelModal] = useState(false);
   const [showWorkpaceModal, setShowWorkspaceModal] = useState(false);
-  const [showCreateChaanelModal, setShowCreateChaanelModal] = useState(false);
+  const [showCreateChaanelModal, setShowCreateChannelModal] = useState(false);
   const [newWorkspace, onChangeNewWorkspace, setNewWorkspace] = useInput('');
   const [newUrl, onChangeNewUrl, setNewUrl] = useInput('');
+
+  const { workspace } = useParams<{ workspace: string }>();
 
   const { data: uesrData, error, revalidate, mutate } = useSWR<IUser | false>(
     'http://localhost:3095/api/users',
     fetcher,
   );
+
+  const { data: channelData } = useSWR<IChannel[]>(uesrData ? `/api/workspaces/${workspace}/channels` : null, fetcher);
 
   // data가 내정보가 들어가있다가 false로 바뀌게 됩니다.
   const onLogout = useCallback(() => {
@@ -95,7 +104,9 @@ const Workspace: VFC = () => {
   // 화면에 띄운 모든 모달을 제거한다.
   const onCloseModal = useCallback(() => {
     setShowCreateWorkspaceModal(false);
-    setShowCreateChaanelModal(false);
+    setShowCreateChannelModal(false);
+    setShowInviteWorkspaceModal(false);
+    setShowInviteChannelModal(false);
   }, []);
 
   const toggleWorkpaceModal = useCallback(() => {
@@ -103,7 +114,11 @@ const Workspace: VFC = () => {
   }, []);
 
   const onClickAddChannel = useCallback(() => {
-    setShowCreateChaanelModal(true);
+    setShowCreateChannelModal(true);
+  }, []);
+
+  const onClickInviteWorkspace = useCallback(() => {
+    setShowInviteWorkspaceModal(true);
   }, []);
 
   if (!uesrData) {
@@ -147,16 +162,20 @@ const Workspace: VFC = () => {
             <Menu show={showWorkpaceModal} onCloseModal={toggleWorkpaceModal} style={{ top: 85, left: 80 }}>
               <WorkspaceModal>
                 <h2>Slact</h2>
+                <button onClick={onClickInviteWorkspace}>워크스페이스에 사용자 초대</button>
                 <button onClick={onClickAddChannel}>채널 만들기</button>
                 <button onClick={onLogout}>로그아웃</button>
               </WorkspaceModal>
             </Menu>
+            {channelData?.map((v) => (
+              <div key={v.id}>{v.name}</div>
+            ))}
           </MenuScroll>
         </Channels>
         <Chats>
           <Switch>
-            <Route path="/workspace/channel" component={Channel} />
-            <Route path="/workspace/dm" component={DirectMessage} />
+            <Route path="/workspace/:workspace/channel/:channel" component={Channel} />
+            <Route path="/workspace/:workspace/dm/:id" component={DirectMessage} />
           </Switch>
         </Chats>
       </WorkspaceWrapper>
@@ -173,7 +192,21 @@ const Workspace: VFC = () => {
           <Button type="submit">생성하기</Button>
         </form>
       </Modal>
-      <CreateChannelModal show={showCreateChaanelModal} onCloseModal={onCloseModal} />
+      <CreateChannelModal
+        show={showCreateChaanelModal}
+        onCloseModal={onCloseModal}
+        setShowCreateChannelModal={setShowCreateChannelModal}
+      />
+      <InviteWorkspaceModal
+        show={showInviteWorkspaceModal}
+        onCloseModal={onCloseModal}
+        setShowInviteWorkspaceModal={setShowInviteWorkspaceModal}
+      />
+      <InviteChannelModal
+        show={showInviteChannelModal}
+        onCloseModal={onCloseModal}
+        setShowInviteChannelModal={setShowInviteChannelModal}
+      />
     </div>
   );
 };

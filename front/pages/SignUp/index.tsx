@@ -66,7 +66,7 @@ const SingUp = () => {
   }
 
   if (data) {
-    return <Redirect to="/login" />;
+    return <Redirect to="/workspace/slack/channel/일반" />;
   }
 
   return (
