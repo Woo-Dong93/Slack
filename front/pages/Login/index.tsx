@@ -48,7 +48,7 @@ const Login = () => {
   }
   //로그인하기를 누르면 data가 바뀌면서 리렌더링이 일어나고 다시 이 조건문에 걸리게 된다.
   if (data) {
-    return <Redirect to="/workspace/channel" />;
+    return <Redirect to="/workspace/slack/channel/일반" />;
   }
 
   return (
