@@ -1,4 +1,4 @@
-import React, { FC, useCallback, useState } from 'react';
+import React, { VFC, useCallback, useState } from 'react';
 import fetcher from '@utils/fetcher';
 import useSWR from 'swr';
 import axios from 'axios';
@@ -17,6 +17,7 @@ import {
   LogOutButton,
   WorkspaceButton,
   AddButton,
+  WorkspaceModal,
 } from './styles';
 import gravatar from 'gravatar';
 import loable from '@loadable/component';
@@ -25,14 +26,17 @@ import { IUser } from '@typings/db';
 import Modal from '@components/Modal';
 import useInput from '@hooks/useInput';
 import { Button, Input, Label } from '@pages/SignUp/styles';
-import { ToastContainer, toast } from 'react-toastify';
+import { toast } from 'react-toastify';
+import CreateChannelModal from '@components/CreateChannelModal';
 
 const Channel = loable(() => import('@pages/Channel'));
 const DirectMessage = loable(() => import('@pages/DirectMessage'));
 
-const Workspace: FC = ({ children }) => {
+const Workspace: VFC = () => {
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [showCreateWorkspaceModal, setShowCreateWorkspaceModal] = useState(false);
+  const [showWorkpaceModal, setShowWorkspaceModal] = useState(false);
+  const [showCreateChaanelModal, setShowCreateChaanelModal] = useState(false);
   const [newWorkspace, onChangeNewWorkspace, setNewWorkspace] = useInput('');
   const [newUrl, onChangeNewUrl, setNewUrl] = useInput('');
 
@@ -87,8 +91,19 @@ const Workspace: FC = ({ children }) => {
     },
     [newWorkspace, newUrl],
   );
+
+  // 화면에 띄운 모든 모달을 제거한다.
   const onCloseModal = useCallback(() => {
     setShowCreateWorkspaceModal(false);
+    setShowCreateChaanelModal(false);
+  }, []);
+
+  const toggleWorkpaceModal = useCallback(() => {
+    setShowWorkspaceModal((prev) => !prev);
+  }, []);
+
+  const onClickAddChannel = useCallback(() => {
+    setShowCreateChaanelModal(true);
   }, []);
 
   if (!uesrData) {
@@ -127,8 +142,16 @@ const Workspace: FC = ({ children }) => {
           <AddButton onClick={onClickCreateWorkspace}>+</AddButton>
         </Workspaces>
         <Channels>
-          <WorkspaceName>Slact</WorkspaceName>
-          <MenuScroll>메뉴스크롤</MenuScroll>
+          <WorkspaceName onClick={toggleWorkpaceModal}>Slack</WorkspaceName>
+          <MenuScroll>
+            <Menu show={showWorkpaceModal} onCloseModal={toggleWorkpaceModal} style={{ top: 85, left: 80 }}>
+              <WorkspaceModal>
+                <h2>Slact</h2>
+                <button onClick={onClickAddChannel}>채널 만들기</button>
+                <button onClick={onLogout}>로그아웃</button>
+              </WorkspaceModal>
+            </Menu>
+          </MenuScroll>
         </Channels>
         <Chats>
           <Switch>
@@ -150,6 +173,7 @@ const Workspace: FC = ({ children }) => {
           <Button type="submit">생성하기</Button>
         </form>
       </Modal>
+      <CreateChannelModal show={showCreateChaanelModal} onCloseModal={onCloseModal} />
     </div>
   );
 };
