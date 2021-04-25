@@ -2,7 +2,7 @@ import React, { FC, useCallback } from 'react';
 import fetcher from '@utils/fetcher';
 import useSWR from 'swr';
 import axios from 'axios';
-import { Redirect } from 'react-router-dom';
+import { Redirect, Route, Switch } from 'react-router-dom';
 import {
   Channels,
   Header,
@@ -15,6 +15,10 @@ import {
   MenuScroll,
 } from './styles';
 import gravatar from 'gravatar';
+import loable from '@loadable/component';
+
+const Channel = loable(() => import('@pages/Channel'));
+const DirectMessage = loable(() => import('@pages/DirectMessage'));
 
 const Workspace: FC = ({ children }) => {
   const { data, error, revalidate, mutate } = useSWR('http://localhost:3095/api/users', fetcher);
@@ -43,12 +47,16 @@ const Workspace: FC = ({ children }) => {
       <WorkspaceWrapper>
         <Workspaces>test</Workspaces>
         <Channels>
-          <WorkspaceName>Sleact</WorkspaceName>
+          <WorkspaceName>Slact</WorkspaceName>
           <MenuScroll>메뉴스크롤</MenuScroll>
         </Channels>
-        <Chats>Chat</Chats>
+        <Chats>
+          <Switch>
+            <Route path="/workspace/channel" component={Channel} />
+            <Route path="/workspace/dm" component={DirectMessage} />
+          </Switch>
+        </Chats>
       </WorkspaceWrapper>
-      {children}
     </div>
   );
 };
