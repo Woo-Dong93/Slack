@@ -29,6 +29,7 @@
     "react-refresh": "^0.10.0",
     "react-router": "^5.2.0",
     "react-router-dom": "^5.2.0",
+    "react-toastify": "^7.0.4",
     "style-loader": "^2.0.0",
     "swr": "^0.5.5",
     "ts-node": "^9.1.1",
