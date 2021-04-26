@@ -31,6 +31,8 @@ import { toast } from 'react-toastify';
 import CreateChannelModal from '@components/CreateChannelModal';
 import InviteWorkspaceModal from '@components/InviteWorkspaceModal';
 import InviteChannelModal from '@components/InviteChannelModal';
+import DMList from '@components/DMList';
+import ChannelList from '@components/ChannelList';
 
 const Channel = loable(() => import('@pages/Channel'));
 const DirectMessage = loable(() => import('@pages/DirectMessage'));
@@ -47,12 +49,15 @@ const Workspace: VFC = () => {
 
   const { workspace } = useParams<{ workspace: string }>();
 
-  const { data: uesrData, error, revalidate, mutate } = useSWR<IUser | false>(
-    'http://localhost:3095/api/users',
-    fetcher,
-  );
+  const { data: userData, error, revalidate, mutate } = useSWR<IUser | false>('/api/users', fetcher, {
+    dedupingInterval: 2000, // 2초
+  });
 
-  const { data: channelData } = useSWR<IChannel[]>(uesrData ? `/api/workspaces/${workspace}/channels` : null, fetcher);
+  // // 로그인한 유저의 채널데이터
+  // const { data: channelData } = useSWR<IChannel[]>(userData ? `/api/workspaces/${workspace}/channels` : null, fetcher);
+
+  // // 워크스페이스에 참여한 멤버들 데이터 가져오기
+  // const { data: memberData } = useSWR<IUser[]>(userData ? `/api/workspaces/${workspace}/members` : null, fetcher);
 
   // data가 내정보가 들어가있다가 false로 바뀌게 됩니다.
   const onLogout = useCallback(() => {
@@ -121,21 +126,22 @@ const Workspace: VFC = () => {
     setShowInviteWorkspaceModal(true);
   }, []);
 
-  if (!uesrData) {
+  if (!userData) {
     return <Redirect to="/login" />;
   }
+
   return (
     <div>
       <Header>
         <RightMenu>
           <span onClick={onClickUserProfile}>
-            <ProfileImg src={gravatar.url(uesrData.email, { s: '28px', d: 'retro' })} alt={uesrData.nickname} />
+            <ProfileImg src={gravatar.url(userData.email, { s: '28px', d: 'retro' })} alt={userData.nickname} />
             {showUserMenu && (
               <Menu style={{ right: 0, top: 38 }} show={showUserMenu} onCloseModal={onClickUserProfile}>
                 <ProfileModal>
-                  <img src={gravatar.url(uesrData.email, { s: '36px', d: 'retro' })} alt={uesrData.nickname} />
+                  <img src={gravatar.url(userData.email, { s: '36px', d: 'retro' })} alt={userData.nickname} />
                   <div>
-                    <span id="profile-name">{uesrData.nickname}</span>
+                    <span id="profile-name">{userData.nickname}</span>
                     <span id="profile-active">Active</span>
                   </div>
                 </ProfileModal>
@@ -147,7 +153,7 @@ const Workspace: VFC = () => {
       </Header>
       <WorkspaceWrapper>
         <Workspaces>
-          {uesrData?.Workspaces.map((ws) => {
+          {userData?.Workspaces.map((ws) => {
             return (
               <Link key={ws.id} to={`/workspace/${123}/channel/일반`}>
                 <WorkspaceButton>{ws.name.slice(0, 1).toUpperCase()}</WorkspaceButton>
@@ -167,9 +173,11 @@ const Workspace: VFC = () => {
                 <button onClick={onLogout}>로그아웃</button>
               </WorkspaceModal>
             </Menu>
-            {channelData?.map((v) => (
+            <ChannelList />
+            <DMList />
+            {/* {channelData?.map((v) => (
               <div key={v.id}>{v.name}</div>
-            ))}
+            ))} */}
           </MenuScroll>
         </Channels>
         <Chats>

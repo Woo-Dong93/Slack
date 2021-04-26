@@ -11,7 +11,7 @@ const Login = () => {
   // 첫번째 요청은 get요청의 주소, 두번째 인자는 fetcher라는 함수 = 앞에 쓴 주소를 어떻게 처리할 것인지 적어줍니다. (util에 직접구현)
   // fetcher가 반환한 data를 구조분해할당으로 받을 수 있고 만약 에러가 발생하면 그 에러도 받을 수 있다.
   // swr은 로딩상태도 알 수 있다.( data가 존재하지 않은 상태를 로딩상태!)
-  const { data, error, revalidate, mutate } = useSWR('http://localhost:3095/api/users', fetcher);
+  const { data, error, revalidate, mutate } = useSWR('/api/users', fetcher);
 
   const [logInError, setLogInError] = useState(false);
   const [email, onChangeEmail] = useInput('');
@@ -32,8 +32,8 @@ const Login = () => {
         )
         .then((response) => {
           // 재전송을 하지말고 그냥 상태를 업데이트 시킨다!
-          mutate(response.data, false);
-          //revalidate();
+          //mutate(response.data, true);
+          revalidate();
         })
         .catch((error) => {
           setLogInError(error.response?.data?.statusCode === 401);
