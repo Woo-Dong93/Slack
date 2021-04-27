@@ -7,6 +7,8 @@ import useSWR from 'swr';
 import ChatBox from '@components/ChatBox';
 import ChatList from '@components/ChatList';
 import useInput from '@hooks/useInput';
+import axios from 'axios';
+import { IDM } from '@typings/db';
 
 const DirectMessage = () => {
   const { workspace, id } = useParams<{ workspace: string; id: string }>();
@@ -15,11 +17,28 @@ const DirectMessage = () => {
   const { data: myData } = useSWR('/api/users', fetcher);
   const [chat, onChangeChat, setChat] = useInput('');
 
+  const { data: chatData, mutate: mutateChat, revalidate } = useSWR<IDM[]>(
+    `/api/workspaces/${workspace}/dms/${id}/chats?perPage=20&page=1`,
+    fetcher,
+  );
+
   const onSubmitForm = useCallback(
     (e) => {
       e.preventDefault();
-      console.log('submit');
-      setChat('');
+      // 채팅이 실제로 존재하면
+      if (chat?.trim()) {
+        axios
+          .post(`/api/workspaces/${workspace}/dms/${id}/chats`, {
+            content: chat,
+          })
+          .then(() => {
+            revalidate();
+            setChat('');
+          })
+          .catch((error) => {
+            console.error(error);
+          });
+      }
     },
     [chat],
   );
