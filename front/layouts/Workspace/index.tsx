@@ -1,4 +1,4 @@
-import React, { VFC, useCallback, useState } from 'react';
+import React, { VFC, useCallback, useState, useEffect } from 'react';
 import fetcher from '@utils/fetcher';
 import useSWR from 'swr';
 import axios from 'axios';
@@ -33,6 +33,7 @@ import InviteWorkspaceModal from '@components/InviteWorkspaceModal';
 import InviteChannelModal from '@components/InviteChannelModal';
 import DMList from '@components/DMList';
 import ChannelList from '@components/ChannelList';
+import useSocket from '@hooks/useSocket';
 
 const Channel = loable(() => import('@pages/Channel'));
 const DirectMessage = loable(() => import('@pages/DirectMessage'));
@@ -54,10 +55,27 @@ const Workspace: VFC = () => {
   });
 
   // // 로그인한 유저의 채널데이터
-  // const { data: channelData } = useSWR<IChannel[]>(userData ? `/api/workspaces/${workspace}/channels` : null, fetcher);
+  const { data: channelData } = useSWR<IChannel[]>(userData ? `/api/workspaces/${workspace}/channels` : null, fetcher);
 
   // // 워크스페이스에 참여한 멤버들 데이터 가져오기
   // const { data: memberData } = useSWR<IUser[]>(userData ? `/api/workspaces/${workspace}/members` : null, fetcher);
+
+  const [socket, disconnect] = useSocket(workspace);
+
+  useEffect(() => {
+    // 채널목록과 내 로그인 정보, 그리고 소켓이 존재할 때
+    if (channelData && userData && socket) {
+      // 서버에게 로그인했음을 알린다.
+      socket.emit('login', { id: userData.id, channels: channelData.map((v) => v.id) });
+    }
+  }, [socket, channelData, userData]);
+
+  // 연결을 끊어줄때(workspace가 바뀔 때)
+  useEffect(() => {
+    return () => {
+      disconnect();
+    };
+  }, [workspace, disconnect]);
 
   // data가 내정보가 들어가있다가 false로 바뀌게 됩니다.
   const onLogout = useCallback(() => {

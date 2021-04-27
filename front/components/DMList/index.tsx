@@ -1,5 +1,6 @@
 // import useSocket from '@hooks/useSocket';
 import { CollapseButton } from '@components/DMList/styles';
+import useSocket from '@hooks/useSocket';
 import { IUser, IUserWithOnline } from '@typings/db';
 import fetcher from '@utils/fetcher';
 import React, { FC, useCallback, useEffect, useState } from 'react';
@@ -19,7 +20,7 @@ const DMList: FC = () => {
     userData ? `/api/workspaces/${workspace}/members` : null,
     fetcher,
   );
-  //const [socket] = useSocket(workspace);
+  const [socket] = useSocket(workspace);
 
   // collapse 버튼의 상태
   const [channelCollapse, setChannelCollapse] = useState(false);
@@ -32,23 +33,25 @@ const DMList: FC = () => {
   }, []);
 
   useEffect(() => {
-    console.log('DMList: workspace 바꼈다', workspace);
+    // console.log('DMList: workspace 바꼈다', workspace);
     setOnlineList([]);
   }, [workspace]);
 
-  // useEffect(() => {
-  //   socket?.on('onlineList', (data: number[]) => {
-  //     setOnlineList(data);
-  //   });
-  //   // socket?.on('dm', onMessage);
-  //   // console.log('socket on dm', socket?.hasListeners('dm'), socket);
-  //   return () => {
-  //     // socket?.off('dm', onMessage);
-  //     // console.log('socket off dm', socket?.hasListeners('dm'));
-  //     socket?.off('onlineList');
-  //   };
-  // }, [socket]);
-
+  useEffect(() => {
+    // 서버로 부터 누가 online인지 알 수 있게 됩니다. ( 이벤트 리스너 )
+    socket?.on('onlineList', (data: number[]) => {
+      setOnlineList(data);
+    });
+    // socket?.on('dm', onMessage);
+    // console.log('socket on dm', socket?.hasListeners('dm'), socket);
+    return () => {
+      // socket?.off('dm', onMessage);
+      // console.log('socket off dm', socket?.hasListeners('dm'));
+      // on과 off는 짝이므로 off를 통해 정리해줘야 합니다.
+      // off를 활용하지 않으면 on이 5번 쌓일 경우 5번 받게 됩니다.
+      socket?.off('onlineList');
+    };
+  }, [socket]);
   return (
     <>
       <h2>

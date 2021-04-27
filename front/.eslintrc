@@ -1,5 +1,5 @@
 {
-  "extends": ["plugin:prettier/recommended"],
+  "extends": ["plugin:prettier/recommended", "react-app"],
   "parser": "babel-eslint",
   "rules": {
     "prettier/prettier": ["error", { "endOfLine": "auto" }]
