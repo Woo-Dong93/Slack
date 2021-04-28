@@ -1,4 +1,4 @@
-import React, { useCallback, useRef } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import { Container, Header } from './styles';
 import gravatar from 'gravatar';
 import { useParams } from 'react-router';
@@ -34,22 +34,48 @@ const DirectMessage = () => {
     (e) => {
       e.preventDefault();
       // 채팅이 실제로 존재하면
-      if (chat?.trim()) {
+      if (chat?.trim() && chatData) {
+        // 무한스크롤이라 2차원배열이다. 가장 최신데이터가 [0]에 들어있다.
+        const savedChat = chat;
+        mutateChat((prevChatData) => {
+          prevChatData?.[0].unshift({
+            // DM 객체
+            id: (chatData[0][0]?.id || 0) + 1,
+            SenderId: myData.id, // 보낸 사람 아이디
+            Sender: myData,
+            ReceiverId: userData.id, // 받는 사람 아이디
+            Receiver: userData,
+            content: savedChat,
+            createdAt: new Date(),
+          });
+          return prevChatData;
+        }, false).then(() => {
+          setChat('');
+          scrollbarRef.current?.scrollToBottom();
+        });
+
         axios
           .post(`/api/workspaces/${workspace}/dms/${id}/chats`, {
             content: chat,
           })
           .then(() => {
             revalidate();
-            setChat('');
           })
           .catch((error) => {
             console.error(error);
           });
       }
     },
-    [chat],
+    [chat, chatData, myData, userData, workspace, id],
   );
+
+  //로딩시 스크롤바 아래로
+  useEffect(() => {
+    // 데이터가 존재할 경우
+    if (chatData?.length === 1) {
+      scrollbarRef.current?.scrollToBottom();
+    }
+  }, [chatData]);
 
   // 정보가 없으면 화면 띄어주지 않기
   if (!userData || !myData) {
