@@ -66,6 +66,7 @@ const Workspace: VFC = () => {
     // 채널목록과 내 로그인 정보, 그리고 소켓이 존재할 때
     if (channelData && userData && socket) {
       // 서버에게 로그인했음을 알린다.
+      console.log(socket);
       socket.emit('login', { id: userData.id, channels: channelData.map((v) => v.id) });
     }
   }, [socket, channelData, userData]);
