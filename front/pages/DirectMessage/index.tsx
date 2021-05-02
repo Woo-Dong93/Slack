@@ -52,6 +52,7 @@ const DirectMessage = () => {
             content: savedChat,
             createdAt: new Date(),
           });
+
           return prevChatData;
         }, false).then(() => {
           setChat('');
@@ -80,7 +81,11 @@ const DirectMessage = () => {
       // 상대방의 세 메시지만 들어가게!
       if (data.SenderId === Number(id) && myData.id !== Number(id)) {
         mutateChat((chatData) => {
-          chatData?.[0].unshift(data);
+          if (chatData !== undefined) {
+            chatData = [[data, ...chatData[0]]];
+          }
+          //chatData?.[0].unshift(data);
+
           return chatData;
         }, false).then(() => {
           if (scrollbarRef.current) {
@@ -107,7 +112,7 @@ const DirectMessage = () => {
     return () => {
       socket?.off('dm', onMessage);
     };
-  }, [socket, id, myData]);
+  }, [socket, onMessage]);
 
   //로딩시 스크롤바 아래로
   useEffect(() => {
@@ -122,9 +127,9 @@ const DirectMessage = () => {
     return null;
   }
 
-  // 2차원배열을 1차원배여로 만들기
+  // 2차원배열을 1차원배열로 만들기
   const chatSections = makeSection(chatData ? chatData.flat().reverse() : []);
-  console.log(chatData);
+
   return (
     <Container>
       <Header>
