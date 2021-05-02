@@ -76,11 +76,9 @@ const config: webpack.Configuration = {
     historyApiFallback: true,
     port: 3090,
     publicPath: '/dist/',
-    disableHostCheck: true,
-    host: '0.0.0.0',
     proxy: {
       '/api/': {
-        target: 'http://192.168.0.6:3095',
+        target: 'http://localhost:3095',
         changeOrigin: true,
       },
     },

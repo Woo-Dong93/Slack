@@ -1,4 +1,4 @@
-import { IDM } from '@typings/db';
+import { IDM, IChat } from '@typings/db';
 import React, { VFC, memo, useMemo } from 'react';
 import { ChatWrapper } from './styles';
 import gravatar from 'gravatar';
@@ -7,12 +7,12 @@ import regexifyString from 'regexify-string';
 import { Link, useParams } from 'react-router-dom';
 
 interface Props {
-  data: IDM;
+  data: IDM | IChat;
 }
 
 const Chat: VFC<Props> = ({ data }) => {
   const { workspace } = useParams<{ workspace: string }>();
-  const user = data.Sender;
+  const user = 'Sender' in data ? data.Sender : data.User;
   // 정규표현식 : //g:모두찾겠다. \ : 특수기호를 무력화(특정한 역할 무력화), .+? : 모든 문자를 1개이상, \d+ : 숫자 1자리 이상
   // \d : 숫자
   // + : 1개 이상
