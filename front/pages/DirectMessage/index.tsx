@@ -1,5 +1,5 @@
-import React, { useCallback, useEffect, useRef } from 'react';
-import { Container, Header } from './styles';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { Container, DragOver, Header } from './styles';
 import gravatar from 'gravatar';
 import { useParams } from 'react-router';
 import fetcher from '@utils/fetcher';
@@ -34,6 +34,7 @@ const DirectMessage = () => {
   const isReachingEnd = isEmpty || (chatData && chatData[chatData.length - 1]?.length < 20) || false;
 
   const scrollbarRef = useRef<Scrollbars>(null);
+  const [dragOver, setDragOver] = useState(false);
   const onSubmitForm = useCallback(
     (e) => {
       e.preventDefault();
@@ -118,9 +119,43 @@ const DirectMessage = () => {
   useEffect(() => {
     // 데이터가 존재할 경우
     if (chatData?.length === 1) {
-      scrollbarRef.current?.scrollToBottom();
+      setTimeout(() => {
+        scrollbarRef.current?.scrollToBottom();
+      }, 500);
     }
   }, [chatData]);
+
+  const onDragOver = useCallback((e) => {
+    // submit 새로고침 방지
+    e.preventDefault();
+    console.log(e);
+    setDragOver(true);
+  }, []);
+
+  const onDrop = useCallback((e) => {
+    e.preventDefault();
+    console.log(e);
+    const formData = new FormData();
+    if (e.dataTransfer.items) {
+      // 파일을 여러개 동시에 올릴 수도 있기 때문에..
+      for (let i = 0; i < e.dataTransfer.items.length; i++) {
+        if (e.dataTransfer.items[i].kind === 'file') {
+          //getAsFile() : 드래그 데이터 항목의 File개체를 반환 합니다. 항목이 파일이 아닌 경우이 null 반환합니다
+          const file = e.dataTransfer.items[i].getAsFile();
+          formData.append('image', file);
+        }
+      }
+    } else {
+      for (let i = 0; i < e.dataTransfer.files.length; i++) {
+        formData.append('image', e.dataTransfer.files[i]);
+      }
+    }
+
+    axios.post(`/api/workspaces/${workspace}/dms/${id}/images`, formData).then(() => {
+      setDragOver(false);
+      revalidate();
+    });
+  }, []);
 
   // 정보가 없으면 화면 띄어주지 않기
   if (!userData || !myData) {
@@ -131,7 +166,7 @@ const DirectMessage = () => {
   const chatSections = makeSection(chatData ? chatData.flat().reverse() : []);
 
   return (
-    <Container>
+    <Container onDrop={onDrop} onDragOver={onDragOver}>
       <Header>
         <img src={gravatar.url(userData.email, { s: '24px', d: 'retro' })} alt={userData.nickname} />
         <span>{userData.nickname}</span>
@@ -144,6 +179,7 @@ const DirectMessage = () => {
         isReachingEnd={isReachingEnd}
       />
       <ChatBox chat={chat} onChangeChat={onChangeChat} onSubmitForm={onSubmitForm} />
+      {dragOver && <DragOver>업로드!</DragOver>}
     </Container>
   );
 };
