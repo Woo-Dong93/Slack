@@ -113,7 +113,7 @@ const handler = () = > {
 
 ### 5. revalidate
 
-- 개발자가 원할 때 SWR을 요청할 수 있습니다.
+- 개발자가 원할 때 SWR을 요청합니다.
 
 ```js
 const { data, error, revalidate } = useSWR("http://localhost:3095/api/users", fetcher);
